@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>珊瑚直播间 · 排品与挂链审核</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo"></span>
+    <div>
+      <h1>珊瑚直播间</h1>
+      <p>排品脚本 · 挂链审核工作台</p>
+    </div>
+  </div>
+  <div class="top-right">
+    <select id="sessionSelect" title="选择场次"></select>
+    <span id="sessionStatus" class="status-pill"></span>
+    <button id="startBtn" class="btn ghost">开场</button>
+    <button id="endBtn" class="btn ghost">结束</button>
+    <button id="publishBtn" class="btn coral fixed-publish">发布整场</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="board" class="tab active">场次编排</button>
+  <button data-tab="script" class="tab">脚本编辑</button>
+  <button data-tab="review" class="tab">商品审核</button>
+  <button data-tab="links" class="tab">挂链检查</button>
+  <button data-tab="samples" class="tab">样品登记</button>
+  <button data-tab="receipts" class="tab">发布回执</button>
+</nav>
+
+<main>
+  <!-- 场次编排：横向时间轴 -->
+  <section id="tab-board" class="tabpanel active">
+    <div class="timeline-head">
+      <div>
+        <h2 id="boardTitle">场次时间轴</h2>
+        <p class="muted" id="boardMeta"></p>
+      </div>
+      <div class="row">
+        <select id="addProductSelect"></select>
+        <button id="addPickBtn" class="btn dark">加入排品</button>
+      </div>
+    </div>
+    <div class="timeline-scroll">
+      <div class="axis"><span class="axis-start">开场</span><div class="axis-line"></div><span class="axis-end">结束</span></div>
+      <div id="timeline" class="timeline"></div>
+    </div>
+    <div id="pickDetail" class="detail-panel hidden"></div>
+  </section>
+
+  <!-- 脚本编辑 + 审核提示 -->
+  <section id="tab-script" class="tabpanel">
+    <div class="script-layout">
+      <div class="script-main">
+        <div class="pane-head">
+          <h2>讲解脚本</h2>
+          <div class="row">
+            <select id="scriptPickSelect"></select>
+            <select id="authorSelect"></select>
+          </div>
+        </div>
+        <textarea id="scriptEditor" rows="16" placeholder="选择左侧时间轴上的商品，或在此选择排品后编写讲解脚本。每次保存都会生成一个新版本。"></textarea>
+        <div class="row between">
+          <input id="scriptNote" class="grow" placeholder="版本备注（如：补充优惠口径）">
+          <div class="row">
+            <button id="saveScriptBtn" class="btn dark">保存为新版本</button>
+            <button id="publishScriptBtn" class="btn coral">发布脚本</button>
+          </div>
+        </div>
+        <div id="versionList" class="version-list"></div>
+      </div>
+      <aside class="script-side">
+        <h3>审核提示</h3>
+        <div id="reviewHints"></div>
+        <div class="side-block">
+          <h4>脚本审核</h4>
+          <select id="reviewerSelect"></select>
+          <div id="selfWarn" class="warn hidden">⚠ 审核人不能审核自己编写（含历史版本）的脚本</div>
+          <div class="row">
+            <button id="approveScriptBtn" class="btn dark">审核通过</button>
+            <button id="rejectScriptBtn" class="btn ghost-dark">驳回</button>
+          </div>
+          <input id="rejectReason" placeholder="驳回原因（可选）">
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 商品审核 -->
+  <section id="tab-review" class="tabpanel">
+    <h2>商品资料审核</h2>
+    <p class="muted">商品必须先通过资料审核，才能加入排品。审核通过/驳回均生成模拟回执。</p>
+    <div id="productGrid" class="product-grid"></div>
+  </section>
+
+  <!-- 挂链检查 -->
+  <section id="tab-links" class="tabpanel">
+    <h2>挂链检查</h2>
+    <div class="row wrap gap">
+      <button id="checkLinksBtn" class="btn coral">立即检查整场挂链</button>
+      <span class="muted">缺货自动下架 · 变价挂起核对 · 链接失效标记 dead</span>
+    </div>
+    <div id="linkList" class="card-list"></div>
+    <h3>异常工单</h3>
+    <div id="incidentList" class="card-list"></div>
+  </section>
+
+  <!-- 样品登记 -->
+  <section id="tab-samples" class="tabpanel">
+    <h2>样品登记</h2>
+    <div class="sample-form card">
+      <select id="sampleProductSelect"></select>
+      <label class="check"><input type="checkbox" id="sampleConform" checked> 样品与挂链资料一致</label>
+      <input type="file" id="samplePhoto" accept="image/*">
+      <input id="sampleNote" class="grow" placeholder="备注（颜色、规格、差异等）">
+      <button id="registerSampleBtn" class="btn dark">登记样品</button>
+    </div>
+    <div id="sampleList" class="sample-grid"></div>
+  </section>
+
+  <!-- 发布回执 -->
+  <section id="tab-receipts" class="tabpanel">
+    <h2>发布回执与回调流水</h2>
+    <div class="two-col">
+      <div>
+        <h3>发布快照 / 回执</h3>
+        <div id="publishReceipts" class="card-list"></div>
+      </div>
+      <div>
+        <h3>审核回执（模拟适配器）</h3>
+        <div id="auditReceipts" class="card-list"></div>
+        <h3>挂链回调流水（幂等处理）</h3>
+        <div id="eventLog" class="card-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<div id="modal" class="modal hidden"><div class="modal-box" id="modalBox"></div></div>
+<script src="/app.js"></script>
+</body>
+</html>

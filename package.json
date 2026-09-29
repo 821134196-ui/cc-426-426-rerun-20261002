@@ -1,0 +1,15 @@
+{
+  "name": "live-pick",
+  "version": "1.0.0",
+  "private": true,
+  "description": "直播间排品脚本与商品挂链审核系统（演示）",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "demo": "node src/server.js --demo",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}
