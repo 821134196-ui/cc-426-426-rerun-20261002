@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>珊瑚直播间 · 排品脚本与挂链审核</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-dot"></span>
+    <span class="brand-name">珊瑚直播间</span>
+    <span class="brand-sub">排品脚本 · 挂链审核</span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="timeline">场次编排</button>
+    <button class="tab" data-tab="products">商品审核</button>
+    <button class="tab" data-tab="samples">样品登记</button>
+    <button class="tab" data-tab="receipts">回执与流水</button>
+  </nav>
+  <div class="top-actions">
+    <span id="sessionBadge" class="status-badge"></span>
+    <button id="btnRefresh" class="btn ghost">刷新检查</button>
+    <button id="btnPublish" class="btn coral publish-btn">发布整场</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= 场次时间轴 ================= -->
+  <section id="view-timeline" class="view active">
+    <div class="session-bar">
+      <div id="sessionTabs" class="session-tabs"></div>
+      <div class="session-meta" id="sessionMeta"></div>
+    </div>
+
+    <div id="snapshotBanner" class="banner snapshot hidden"></div>
+
+    <div class="check-panel">
+      <div class="check-head">
+        <h3>发布前挂链检查</h3>
+        <div>
+          <button class="btn small ghost" id="btnRunCheck">重新检查</button>
+          <button class="btn small ghost" id="btnScanIssues">扫描实时异常</button>
+        </div>
+      </div>
+      <div id="checkResult" class="check-result"></div>
+    </div>
+
+    <h3 class="section-title">横向排品时间轴 <small>（卡片固定显示图片 · 库存 · 挂链状态）</small></h3>
+    <div class="timeline-scroll">
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+
+    <div id="addItemBox" class="add-item-box hidden">
+      <h4>加入排品（商品必须先通过资料审核）</h4>
+      <div class="form-row" id="addItemForm"></div>
+    </div>
+  </section>
+
+  <!-- ================= 商品与资料审核 ================= -->
+  <section id="view-products" class="view">
+    <div class="toolbar">
+      <h3>演示商品 / 资料审核 / 实时价格</h3>
+      <div class="hint">商品、主播与价格来自进程内模拟适配器，可直接干预制造异常场景。</div>
+    </div>
+    <div id="productGrid" class="product-grid"></div>
+  </section>
+
+  <!-- ================= 样品登记 ================= -->
+  <section id="view-samples" class="view">
+    <div class="toolbar">
+      <h3>样品登记（照片保存到本地目录 data/samples）</h3>
+    </div>
+    <div class="sample-form card">
+      <select id="sampleProduct"></select>
+      <label class="checkline"><input type="checkbox" id="sampleMismatch"> 样品与资料不符</label>
+      <input type="text" id="sampleNote" placeholder="备注（如：实测容量与标称不符）">
+      <button class="btn coral" id="btnRegisterSample">用演示照片登记</button>
+    </div>
+    <div id="sampleList" class="sample-list"></div>
+  </section>
+
+  <!-- ================= 回执与流水 ================= -->
+  <section id="view-receipts" class="view">
+    <div class="toolbar"><h3>发布 / 审核回执（进程内模拟适配器）</h3></div>
+    <div id="receiptList" class="receipt-list"></div>
+    <div class="toolbar"><h3>操作流水</h3></div>
+    <div id="auditList" class="audit-list"></div>
+  </section>
+</main>
+
+<!-- 脚本编辑抽屉：编辑器 + 同步审核提示 -->
+<div id="drawerMask" class="drawer-mask hidden"></div>
+<aside id="scriptDrawer" class="drawer hidden">
+  <div class="drawer-head">
+    <div>
+      <h3 id="drawerTitle">讲解脚本</h3>
+      <div class="drawer-sub" id="drawerSub"></div>
+    </div>
+    <button class="btn ghost small" id="btnCloseDrawer">关闭</button>
+  </div>
+  <div class="drawer-body">
+    <div class="editor-col">
+      <div class="editor-meta">
+        <label>作者
+          <input type="text" id="scriptAuthor" class="mini-input">
+        </label>
+        <span class="ver-tag" id="scriptVersionTag"></span>
+      </div>
+      <textarea id="scriptContent" class="script-area"
+        placeholder="编写讲解脚本…修改保存会生成新的草稿版本"></textarea>
+      <div class="editor-actions">
+        <button class="btn dark" id="btnSaveDraft">保存为新版本</button>
+        <button class="btn coral" id="btnSubmitScript">送审</button>
+      </div>
+      <div class="version-history" id="versionHistory"></div>
+    </div>
+    <div class="review-col">
+      <h4>审核提示（同步校验）</h4>
+      <div id="reviewTips" class="review-tips"></div>
+      <div class="review-box">
+        <label>审核人
+          <select id="reviewerSelect" class="mini-input"></select>
+        </label>
+        <input type="text" id="reviewNote" class="mini-input full" placeholder="审核意见（驳回必填）">
+        <div class="editor-actions">
+          <button class="btn ok" id="btnApprove">审核通过</button>
+          <button class="btn danger" id="btnReject">驳回</button>
+        </div>
+        <p class="rule-note">规则：审核人不能审核自己编写的脚本；含违规词的版本不能通过。</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
